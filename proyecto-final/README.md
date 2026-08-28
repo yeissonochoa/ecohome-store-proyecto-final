@@ -141,7 +141,7 @@ Si necesitas recrear cualquiera de estos usuarios (o crear uno nuevo):
 ```bash
 curl -X POST http://localhost:3001/api/v1/auth/signup \
   -H "Content-Type: application/json" \
-  -d '{"name":"Arturo","email":"arturo@ecohome.test","password":"Arturo123!","role":"admin"}'
+  -d '{"name":"santi","email":"snati@ecohome.test","password":"santi123!","role":"admin"}'
 ```
 El campo `role` es opcional — si se omite, el usuario queda como `client`.
 
@@ -215,7 +215,7 @@ Formato de `Message`:
 {
   "id": "uuid",
   "userId": "uuid",
-  "username": "arturo@ecohome.test",
+  "username": "santi@ecohome.test",
   "text": "Confirmado: hay 40 unidades en stock.",
   "createdAt": "2026-08-28T14:49:56.000Z"
 }
