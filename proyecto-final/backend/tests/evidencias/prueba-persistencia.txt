@@ -1,0 +1,12 @@
+=========================================================================
+EVIDENCIA - Prueba de persistencia (Actividad 1, Unidad 1)
+=========================================================================
+PASO 1: Crear producto autenticado como admin -> 201 Created
+PASO 2: Detener el proceso del servidor (kill)
+PASO 3: Reiniciar el servidor (npm start) -> reconexion a PostgreSQL OK
+PASO 4: GET /api/v1/products tras el reinicio -> el producto creado en
+        el paso 1 SIGUE presente, con el mismo id y timestamps.
+
+CONCLUSION: el catalogo ya no vive en memoria del proceso Node.js sino
+persistido en PostgreSQL.
+=========================================================================

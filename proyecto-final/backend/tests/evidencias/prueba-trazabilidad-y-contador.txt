@@ -1,0 +1,70 @@
+=========================================================================
+EVIDENCIA - Trazabilidad de productos y contador dinamico "Nombre (N)"
+(Actividad 2 y 3, Unidad 3)
+=========================================================================
+
+PASO 1: Login con usuario Arturo (admin)
+-------------------------------------------------------------------------
+POST /api/v1/auth/login
+{"email":"arturo@ecohome.test","password":"Arturo123!"}
+-> 200 OK, token JWT obtenido
+
+PASO 2: Consultar estadisticas ANTES de crear productos
+-------------------------------------------------------------------------
+GET /api/v1/users/me/stats
+Authorization: Bearer <token>
+
+Respuesta:
+{"success":true,"data":{
+  "id":"135ad04b-debd-4feb-94f8-602088d649e7",
+  "name":"Arturo","email":"arturo@ecohome.test","role":"admin",
+  "productsCreated":0,
+  "label":"Arturo (0)"
+}}
+
+PASO 3: Crear un producto con el JWT de Arturo
+-------------------------------------------------------------------------
+POST /api/v1/products
+Authorization: Bearer <token>
+{"name":"Vaso ecologico trazabilidad","price":12.5,"stock":5}
+
+Respuesta (201):
+{"success":true,"data":{
+  "id":"5aa576ef-b919-4407-be2f-0844f5119dd1",
+  "name":"Vaso ecologico trazabilidad","price":12.5,
+  "isActive":true,"stock":5,
+  "createdBy":"135ad04b-debd-4feb-94f8-602088d649e7",
+  "creatorUsername":"arturo@ecohome.test",
+  "createdAt":"2026-08-20T19:06:38.905Z",
+  "updatedAt":"2026-08-20T19:06:38.905Z"
+}}
+
+CONFIRMA: el producto quedo asociado a "Arturo" (createdBy = su id,
+creatorUsername = su email), tal como exige la Actividad 2.
+
+PASO 4: Consultar estadisticas DESPUES de crear el producto
+-------------------------------------------------------------------------
+GET /api/v1/users/me/stats
+
+Respuesta:
+{"success":true,"data":{
+  "productsCreated":1,
+  "label":"Arturo (1)"
+}}
+
+CONFIRMA: el contador paso de "Arturo (0)" a "Arturo (1)" de forma
+inmediata, tal como exige la Actividad 3.
+
+PASO 5: Listar productos y verificar que aparece el creador
+-------------------------------------------------------------------------
+GET /api/v1/products (publico, sin token)
+
+Respuesta:
+{"success":true,"data":[{
+  ...
+  "creatorUsername":"arturo@ecohome.test",
+  ...
+}]}
+
+CONFIRMA: al consultar el catalogo, aparece el creador de cada producto.
+=========================================================================

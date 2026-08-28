@@ -1,0 +1,30 @@
+=========================================================================
+EVIDENCIA - Autenticacion JWT en el handshake y limite de historial (10)
+(Actividad 2, Unidad 2)
+=========================================================================
+
+PRUEBA 1: Conexion de socket SIN token -> debe ser rechazada
+-------------------------------------------------------------------------
+Resultado obtenido:
+Conexion rechazada correctamente: AUTH_REQUIRED: token no proporcionado.
+
+PRUEBA 2: Envio de 13 mensajes y verificacion de que el historial
+          solo entrega los ultimos 10, en orden cronologico ascendente
+-------------------------------------------------------------------------
+Historial recibido al reconectar: 10 mensajes (debe ser 10)
+  - Mensaje de prueba numero 4
+  - Mensaje de prueba numero 5
+  - Mensaje de prueba numero 6
+  - Mensaje de prueba numero 7
+  - Mensaje de prueba numero 8
+  - Mensaje de prueba numero 9
+  - Mensaje de prueba numero 10
+  - Mensaje de prueba numero 11
+  - Mensaje de prueba numero 12
+  - Mensaje de prueba numero 13
+
+CONCLUSION: se enviaron 13 mensajes (numero 1 al 13) y el servidor
+correctamente descarto los 3 mas antiguos (1,2,3), entregando solo los
+10 mas recientes en orden cronologico ascendente, tal como exige el
+enunciado ("al entrar, cada usuario ve los ultimos 10 mensajes").
+=========================================================================

@@ -1,0 +1,33 @@
+=========================================================================
+EVIDENCIA - Prueba de chat en tiempo real con 2 clientes en paralelo
+(Actividad 1 y 3, Unidad 2) - node tests/chat-two-clients-test.js
+=========================================================================
+== Login de los 2 usuarios de prueba ==
+Ventas token:     eyJhbGciOiJIUzI1NiIs...
+Logística token:  eyJhbGciOiJIUzI1NiIs...
+
+== Conectando 2 clientes Socket.IO en paralelo (simula 2 navegadores) ==
+[NAVEGADOR-1-VENTAS] Conectado (socket id: esvsiUXXoqzQbUrSAAAB)
+[NAVEGADOR-2-LOGISTICA] Conectado (socket id: P3mvF5gD9QaSlel-AAAD)
+[NAVEGADOR-1-VENTAS] Historial recibido al conectar (0 mensajes)
+[NAVEGADOR-2-LOGISTICA] Historial recibido al conectar (0 mensajes)
+
+== Ventas envia un mensaje ==
+[NAVEGADOR-1-VENTAS] new-message en vivo => [ventas@ecohome.test]: Confirmado: hay 40 unidades de vasos ecologicos en stock.
+[NAVEGADOR-2-LOGISTICA] new-message en vivo => [ventas@ecohome.test]: Confirmado: hay 40 unidades de vasos ecologicos en stock.
+
+== Logistica responde ==
+[NAVEGADOR-1-VENTAS] new-message en vivo => [logistica@ecohome.test]: Recibido, alistamos el pedido para envio hoy mismo.
+[NAVEGADOR-2-LOGISTICA] new-message en vivo => [logistica@ecohome.test]: Recibido, alistamos el pedido para envio hoy mismo.
+
+== Verificando persistencia via endpoint HTTP /messages/recent ==
+HTTP 200 - 2 mensajes almacenados en BD:
+  [2026-08-14T03:32:34.440Z] ventas@ecohome.test: Confirmado: hay 40 unidades de vasos ecologicos en stock.
+  [2026-08-14T03:32:35.244Z] logistica@ecohome.test: Recibido, alistamos el pedido para envio hoy mismo.
+
+== Prueba finalizada: ambos clientes recibieron los mensajes del otro en tiempo real ==
+
+CONCLUSION: el mensaje enviado por un cliente aparece en tiempo real en
+el otro cliente conectado (broadcast via io.emit), y ambos mensajes
+quedan persistidos en PostgreSQL antes del reenvio.
+=========================================================================
