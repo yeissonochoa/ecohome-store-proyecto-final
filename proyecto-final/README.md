@@ -128,8 +128,8 @@ login, catálogo y chat.
 
 | Rol | Email | Password | Permisos |
 |---|---|---|---|
-| Admin | `arturo@ecohome.test` | `Arturo123!` | Crear/editar/eliminar productos, ver su contador de productos creados |
-| Cliente | `cliente@ecohome.test` | `Cliente123!` | Solo consulta el catálogo y usa el chat |
+| Admin | `santi@ecohome.test` | `Santi123!` | Crear/editar/eliminar productos, ver su contador de productos creados |
+| Cliente | `cliente1@ecohome.test` | `Cliente123!` | Solo consulta el catálogo y usa el chat |
 
 Usuarios adicionales usados en las pruebas del chat en tiempo real:
 | Email | Password |
