@@ -20,25 +20,25 @@ duplicados.
 ## 1. Variables de entorno
 
 ### Backend (`/backend/.env`)
-Copia la plantilla y ajusta tus credenciales de PostgreSQL:
+Copia la plantilla y ajusta si tu PostgreSQL local usa otro puerto/credenciales:
 ```bash
 cd backend
 copy .env.example .env      # Windows (PowerShell)
 # cp .env.example .env      # macOS/Linux
 ```
-Contenido esperado:
+Contenido usado en esta entrega:
 ```
-PORT=3000
+PORT=3001
 NODE_ENV=development
 
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=5433
 DB_USER=postgres
 DB_PASS=postgres
 DB_NAME=ecohome_store
 DB_SSL=false
 
-JWT_SECRET=pon_aqui_una_clave_larga_y_aleatoria
+JWT_SECRET=change_this_super_secret_key_before_deploy
 JWT_EXPIRES_IN=1h
 
 BCRYPT_SALT_ROUNDS=10
@@ -46,33 +46,38 @@ BCRYPT_SALT_ROUNDS=10
 # Origen permitido para CORS y para el handshake de Socket.IO
 CORS_ORIGIN=http://localhost:5173
 ```
+> ⚠️ `DB_PORT=5433` porque en este equipo PostgreSQL corre en ese puerto
+> (probablemente hay otra instancia usando el 5432 por defecto). Si tu
+> PostgreSQL usa el puerto estándar, cambia `DB_PORT` a `5432`.
 
-### Frontend web (`/web-react/.env`)
+### Frontend Web (`/web-react/.env`)
 ```bash
 cd web-react
 copy .env.example .env
 ```
 ```
-VITE_API_URL=http://localhost:3000/api/v1
-VITE_SOCKET_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3001/api/v1
+VITE_SOCKET_URL=http://localhost:3001
 ```
 
-### App móvil (`/mobile-flutter/lib/config/env.dart`)
-No usa `.env` (Flutter resuelve la URL según la plataforma en tiempo de
-ejecución). Solo edita el puerto si tu backend no corre en 3000:
+### App Móvil (`/mobile-flutter/lib/config/env.dart`)
+No usa archivo `.env`; la URL del backend se resuelve automáticamente
+según la plataforma en tiempo de ejecución (emulador Android usa
+`10.0.2.2`, el resto usa `localhost`). El puerto se define aquí:
 ```dart
-static const int backendPort = 3000;
+static const int backendPort = 3001; // debe coincidir con PORT del backend
 ```
-Y, si vas a probar en un **celular físico** (no emulador/simulador),
-define tu IP LAN:
+Si vas a probar en un **celular físico** (no emulador/simulador), define
+tu IP LAN en el mismo archivo:
 ```dart
 static const String? manualHostOverride = '192.168.1.50';
 ```
 
 ---
 
-## 2. Cómo correr el Backend
+## 2. Cómo correr el proyecto
 
+### Backend
 ```bash
 cd backend
 npm install
@@ -84,17 +89,15 @@ npm start
 ```
 Debe mostrar:
 ```
-🌱 EcoHome Store backend escuchando en http://localhost:3000
+🌱 EcoHome Store backend escuchando en http://localhost:3001
    Socket.IO (chat en tiempo real) activo en el mismo puerto.
 ```
-
 Verifica:
 ```bash
-curl http://localhost:3000/api/v1/health
+curl http://localhost:3001/api/v1/health
 ```
 
-## 3. Cómo correr el Frontend Web (React)
-
+### Frontend Web (React)
 ```bash
 cd web-react
 npm install
@@ -102,55 +105,49 @@ npm run dev
 ```
 Abre `http://localhost:5173`.
 
-## 4. Cómo correr la App Móvil (Flutter)
-
+### App Móvil (Flutter)
 ```bash
 cd mobile-flutter
-flutter create .        # genera android/ ios/ web/ (solo la primera vez)
+flutter create .        # solo la primera vez, genera android/ ios/ web/
 flutter pub get
 flutter run              # con un emulador/dispositivo ya conectado
 ```
-Ver `mobile-flutter/README.md` para la guía completa de instalación de
-Flutter y Android Studio, y solución de problemas comunes.
-
-Para generar el **APK** de evidencia (ver Módulo C del enunciado):
+Generar el APK de distribución (evidencia del Módulo C):
 ```bash
 flutter build apk --debug
 ```
 El archivo queda en `build/app/outputs/flutter-apk/app-debug.apk`.
 
+**Importante:** el backend debe estar corriendo (`npm start`) *antes* de
+abrir el frontend web o la app móvil, ya que ambos dependen de él para
+login, catálogo y chat.
+
 ---
 
-## 5. Credenciales de prueba
+## 3. Credenciales de prueba
 
-No se incluyen usuarios precargados en la base de datos (por seguridad,
-las contraseñas nunca se siembran en texto plano en un script). Créalos
-tú mismo con estos dos comandos, una sola vez:
+| Rol | Email | Password | Permisos |
+|---|---|---|---|
+| Admin | `arturo@ecohome.test` | `Arturo123!` | Crear/editar/eliminar productos, ver su contador de productos creados |
+| Cliente | `cliente@ecohome.test` | `Cliente123!` | Solo consulta el catálogo y usa el chat |
 
-**Admin** (puede crear/editar/eliminar productos):
+Usuarios adicionales usados en las pruebas del chat en tiempo real:
+| Email | Password |
+|---|---|
+| `ventas@ecohome.test` | `Ventas123!` |
+| `logistica@ecohome.test` | `Logistica123!` |
+
+Si necesitas recrear cualquiera de estos usuarios (o crear uno nuevo):
 ```bash
-curl -X POST http://localhost:3000/api/v1/auth/signup \
+curl -X POST http://localhost:3001/api/v1/auth/signup \
   -H "Content-Type: application/json" \
   -d '{"name":"Arturo","email":"arturo@ecohome.test","password":"Arturo123!","role":"admin"}'
 ```
-
-**Cliente** (solo consulta el catálogo y usa el chat):
-```bash
-curl -X POST http://localhost:3000/api/v1/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Cliente Demo","email":"cliente@ecohome.test","password":"Cliente123!"}'
-```
-
-Luego inicia sesión con cualquiera de los dos desde React, Flutter, o:
-```bash
-curl -X POST http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"arturo@ecohome.test","password":"Arturo123!"}'
-```
+El campo `role` es opcional — si se omite, el usuario queda como `client`.
 
 ---
 
-## 6. Rutas HTTP
+## 4. Rutas HTTP
 
 ### Autenticación
 | Método | Ruta | Protección | Descripción |
@@ -163,19 +160,24 @@ curl -X POST http://localhost:3000/api/v1/auth/login \
 |---|---|---|---|
 | GET | `/api/v1/products` | Pública | Lista productos, incluye `creatorUsername` |
 | GET | `/api/v1/products/:id` | Pública | Detalle por id (404 si no existe) |
-| POST | `/api/v1/products` | JWT + admin | Crea producto, asociado al usuario del token |
-| PUT/PATCH | `/api/v1/products/:id` | JWT + admin | Actualiza producto |
-| DELETE | `/api/v1/products/:id` | JWT + admin | Elimina producto |
+| POST | `/api/v1/products` | JWT + rol `admin` | Crea producto, asociado automáticamente al usuario del token |
+| PUT/PATCH | `/api/v1/products/:id` | JWT + rol `admin` | Actualiza producto |
+| DELETE | `/api/v1/products/:id` | JWT + rol `admin` | Elimina producto |
 
 ### Usuarios
 | Método | Ruta | Protección | Descripción |
 |---|---|---|---|
-| GET | `/api/v1/users/me/stats` | JWT | `{ name, productsCreated, label: "Nombre (N)" }` |
+| GET | `/api/v1/users/me/stats` | JWT | Devuelve `{ name, productsCreated, label: "Nombre (N)" }` |
 
 ### Mensajes (verificación de persistencia)
 | Método | Ruta | Protección | Descripción |
 |---|---|---|---|
-| GET | `/api/v1/messages/recent` | JWT | Últimos N mensajes guardados en BD |
+| GET | `/api/v1/messages/recent` | JWT | Últimos N mensajes guardados en base de datos |
+
+### Salud del servicio
+| Método | Ruta | Protección | Descripción |
+|---|---|---|---|
+| GET | `/api/v1/health` | Pública | Verifica que el backend está en línea |
 
 Todas las rutas protegidas requieren el header:
 ```
@@ -184,24 +186,25 @@ Authorization: Bearer <token>
 
 ---
 
-## 7. Rutas y eventos de Socket.IO
+## 5. Rutas y eventos de Socket.IO
 
-**Conexión** (namespace por defecto, mismo puerto que la API REST):
+**Conexión** (mismo puerto que la API REST):
 ```
-ws://localhost:3000
+ws://localhost:3001
 ```
+
 El **handshake exige un JWT válido**, enviado por el cliente como:
 ```js
-io(SOCKET_URL, { auth: { token: "<jwt>" } })
+io("http://localhost:3001", { auth: { token: "<jwt>" } })
 ```
-Si falta o es inválido, el servidor rechaza la conexión con
-`connect_error` (`AUTH_REQUIRED` o `AUTH_INVALID`) — nunca llega a
-`connection`.
+Si el token falta o es inválido, el servidor rechaza la conexión con
+`connect_error` (`AUTH_REQUIRED` o `AUTH_INVALID`) — el cliente nunca
+llega al evento `connection`.
 
 | Evento | Dirección | Payload | Descripción |
 |---|---|---|---|
 | `chat-history` | servidor → cliente | `Message[]` | Últimos 10 mensajes, emitido justo al conectar |
-| `messages` | servidor → cliente | `Message[]` | Alias de `chat-history` (mismo payload), por compatibilidad con distintos nombres de evento |
+| `messages` | servidor → cliente | `Message[]` | Alias de `chat-history` (mismo payload) |
 | `new-message` | cliente → servidor | `{ text: string }` | El cliente envía un mensaje nuevo |
 | `new-message` | servidor → todos los clientes | `Message` | Broadcast del mensaje ya persistido en BD (`io.emit`) |
 | `chat-error` | servidor → cliente | `{ message: string }` | Error de validación o de servidor |
@@ -214,33 +217,27 @@ Formato de `Message`:
   "userId": "uuid",
   "username": "arturo@ecohome.test",
   "text": "Confirmado: hay 40 unidades en stock.",
-  "createdAt": "2026-08-27T00:56:00.000Z"
+  "createdAt": "2026-08-28T14:49:56.000Z"
 }
 ```
 
 ---
 
-## 8. Reglas de integración cumplidas
+## 6. Reglas de integración cumplidas
 
-- ✅ **Un solo backend** para web y móvil — ni un endpoint duplicado; React y Flutter llaman literalmente las mismas rutas HTTP y el mismo servidor Socket.IO.
-- ✅ **Misma autenticación JWT** para ambos clientes (mismo `TokenService`, mismo `authJWT`/`socketAuthMiddleware`).
-- ✅ **Persistencia total**: productos y mensajes viven en PostgreSQL, no en memoria — sobreviven reinicios del proceso Node.js (verificado explícitamente, ver informes de Unidad 1 y 2).
-- ✅ **Códigos HTTP correctos**: 200/201/400/401/403/404/409 según corresponda, con manejo centralizado de errores (`errorHandler`).
-- ✅ **Seguridad**: contraseñas hasheadas con bcrypt (nunca texto plano), rutas de escritura protegidas con JWT + RBAC.
+- ✅ **Un solo backend** para web y móvil — ningún endpoint duplicado; React y Flutter consumen literalmente las mismas rutas HTTP y el mismo servidor Socket.IO.
+- ✅ **Misma autenticación JWT** para ambos clientes.
+- ✅ **Persistencia total**: productos y mensajes viven en PostgreSQL, sobreviven reinicios del proceso Node.js (verificado).
+- ✅ **Códigos HTTP correctos**: 200/201/400/401/403/404/409 según corresponda.
+- ✅ **Seguridad**: contraseñas hasheadas con bcrypt (nunca texto plano), rutas de escritura protegidas con JWT + control de roles.
 
-## 9. Evidencias incluidas
+## 7. Evidencias incluidas en el repositorio
 
 - `db/*.sql` — scripts de creación y migraciones.
-- `backend/tests/curl-collection.sh` — colección de pruebas cURL end-to-end (signup → login → CRUD, con casos de error).
-- `backend/tests/chat-two-clients-test.js` — prueba de 2 clientes de Socket.IO en paralelo (historial + tiempo real).
-- `backend/tests/evidencias/*.txt` — logs de las pruebas ya ejecutadas (persistencia, trazabilidad, contador, auth de chat).
-- `mobile-flutter/README.md` — guía paso a paso de instalación de Flutter/Android Studio y solución de problemas comunes.
-
-## 10. Documentación técnica adicional
-
-Los informes técnicos detallados de cada unidad (arquitectura, decisiones
-de diseño, evidencias completas) están en los documentos Word entregados
-junto con este repositorio:
-- Informe Técnico Unidad 1 — Backend RESTful base.
-- Informe Técnico Unidad 2 — Chat en tiempo real.
-- Informe Técnico Unidad 3 — App móvil y trazabilidad.
+- `backend/tests/curl-collection.sh` — colección de pruebas cURL end-to-end.
+- `backend/tests/chat-two-clients-test.js` — prueba de 2 clientes de Socket.IO en paralelo (historial + tiempo real). Uso:
+  ```bash
+  BASE_URL=http://localhost:3001 node tests/chat-two-clients-test.js
+  ```
+- `backend/tests/evidencias/*.txt` — logs de pruebas ya ejecutadas (persistencia, trazabilidad, contador, autenticación del chat).
+- `mobile-flutter/README.md` — guía de instalación de Flutter/Android Studio y solución de problemas comunes.
